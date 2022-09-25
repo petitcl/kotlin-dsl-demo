@@ -1,6 +1,6 @@
 @file:Suppress("SuspiciousCollectionReassignment")
 
-package com.petitcl.test.kotlindsl.html
+package com.petitcl.test.kotlindsl.khtml
 
 /**
  * DSL classes

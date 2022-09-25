@@ -1,6 +1,6 @@
 package com.petitcl.test.kotlindsltest
 
-import com.petitcl.test.kotlindsl.html.*
+import com.petitcl.test.kotlindsl.khtml.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
