@@ -1,6 +1,8 @@
+@file:Suppress("UNSUPPORTED_FEATURE")
 package com.petitcl.test.kasserttest
 
 import com.petitcl.test.kotlindsl.kassert.*
+import com.petitcl.test.kotlindsl.kassertext.describedAs
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
@@ -150,6 +152,16 @@ class KassertTest {
                 it should notBeEqualTo("123456789")
             }
         }
+    }
+
+    @Test
+    fun test_contextReceivers() {
+        val t = assertThrows(kassertError) {
+            kassert("abcdefgh") {
+                it describedAs "Hello!" should beEqualTo("123456789")
+            }
+        }
+        assertEquals("Expected `123456789` but was `abcdefgh`", t.message)
     }
 
 }

@@ -19,6 +19,10 @@ tasks.test {
     useJUnitPlatform()
 }
 
-tasks.withType<KotlinCompile>() {
+tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "1.8"
+}
+
+tasks.withType(KotlinCompile::class).all {
+    kotlinOptions.freeCompilerArgs = listOf("-Xcontext-receivers")
 }
