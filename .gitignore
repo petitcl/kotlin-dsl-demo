@@ -2,3 +2,5 @@
 /.gradle/
 /build/
 .idea
+/sample-domain/build/
+/domain4k-core/build/
