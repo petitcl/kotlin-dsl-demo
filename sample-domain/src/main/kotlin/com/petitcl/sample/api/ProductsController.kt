@@ -9,7 +9,9 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/v1/products")
-class ProductsController(private val productsService: ProductsService) {
+class ProductsController(
+    private val productsService: ProductsService,
+) {
 
     @PostMapping
     fun createProducts(): List<Product> = TODO()

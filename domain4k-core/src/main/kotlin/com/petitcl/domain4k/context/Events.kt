@@ -2,6 +2,9 @@ package com.petitcl.domain4k.context
 
 import com.petitcl.domain4k.stereotype.DomainEvent
 import com.petitcl.domain4k.stereotype.WithEvents
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 
 /**
  * Context for raising events from domain
@@ -48,9 +51,37 @@ class CollectingEventsPublisher : EventsPublisher {
  * Run a block of code and collect all events raised during the execution.
  * Events collected are flushed to the given publisher after the block is done executing.
  */
-fun runAndCollectEvents(sink: EventsPublisher, block: context(EventsContext) () -> Unit) {
+@OptIn(ExperimentalContracts::class)
+inline fun runAndCollectEvents(sink: EventsPublisher, block: context(EventsContext) () -> Unit) {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+    }
     val publisher = CollectingEventsPublisher()
     block(EventsContext.of(publisher))
+    val events = publisher.events()
+    sink.publishEvents(events)
+}
+
+@OptIn(ExperimentalContracts::class)
+@Suppress("SUBTYPING_BETWEEN_CONTEXT_RECEIVERS")
+inline fun <A> runAndCollectEvents(sink: EventsPublisher, a: A, block: context(EventsContext, A) () -> Unit) {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+    }
+    val publisher = CollectingEventsPublisher()
+    block(EventsContext.of(publisher), a)
+    val events = publisher.events()
+    sink.publishEvents(events)
+}
+
+@OptIn(ExperimentalContracts::class)
+@Suppress("SUBTYPING_BETWEEN_CONTEXT_RECEIVERS")
+inline fun <A, B> runAndCollectEvents(sink: EventsPublisher, a: A, b: B, block: context(EventsContext, A, B) () -> Unit) {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+    }
+    val publisher = CollectingEventsPublisher()
+    block(EventsContext.of(publisher), a, b)
     val events = publisher.events()
     sink.publishEvents(events)
 }
@@ -59,10 +90,37 @@ fun runAndCollectEvents(sink: EventsPublisher, block: context(EventsContext) () 
  * Run a block of code and collect all events raised during the execution.
  * Events collected are returned as a list.
  */
-fun runAndCollectEvents(block: context(EventsContext) () -> Unit): List<DomainEvent> {
+@OptIn(ExperimentalContracts::class)
+inline fun runAndReturnEvents(block: context(EventsContext) () -> Unit): List<DomainEvent> {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+    }
     val publisher = CollectingEventsPublisher()
     block(EventsContext.of(publisher))
     return publisher.events()
 }
+
+@OptIn(ExperimentalContracts::class)
+@Suppress("SUBTYPING_BETWEEN_CONTEXT_RECEIVERS")
+inline fun <A> runAndReturnEvents(a: A, block: context(EventsContext, A) () -> Unit): List<DomainEvent> {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+    }
+    val publisher = CollectingEventsPublisher()
+    block(EventsContext.of(publisher), a)
+    return publisher.events()
+}
+
+@OptIn(ExperimentalContracts::class)
+@Suppress("SUBTYPING_BETWEEN_CONTEXT_RECEIVERS")
+inline fun <A, B> runAndReturnEvents(a: A, b : B, block: context(EventsContext, A,B) () -> Unit): List<DomainEvent> {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+    }
+    val publisher = CollectingEventsPublisher()
+    block(EventsContext.of(publisher), a, b)
+    return publisher.events()
+}
+
 
 fun EventsContext.Companion.noOp(): EventsContext = DefaultEventContext(NoOpEventsPublisher())
