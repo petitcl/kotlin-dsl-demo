@@ -34,7 +34,20 @@ class CollectingEventsContext : EventsContext {
     }
 }
 
-// TODO: generalise these methods by introducing initializing and finalizing contexts?
+/**
+ * Return a new [EventsContext] that will forward all events to this [EventsContext] after the block is done executing.
+ * Use in conjunction with [within] to collect events raised in a block of code.
+ */
+fun EventsContext.pipe(): EventsContext = ForwardingEventsContext(this)
+
+class ForwardingEventsContext(
+    private val sink: EventsContext
+) : EventsContext, ContextWithLifecycle<ForwardingEventsContext> {
+    private val collector = CollectingEventsContext()
+    override fun publishEvent(event: DomainEvent) = collector.publishEvent(event)
+    override fun initialize(): ForwardingEventsContext = this
+    override fun finalize() = sink.publishEvents(collector.events())
+}
 
 /**
  * Run a block of code and collect all events raised during the execution.

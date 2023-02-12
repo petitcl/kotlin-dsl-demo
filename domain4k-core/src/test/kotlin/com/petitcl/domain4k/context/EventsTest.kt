@@ -1,42 +1,9 @@
 package com.petitcl.domain4k.context
 
+import com.petitcl.domain4k.fixtures.*
 import com.petitcl.domain4k.stereotype.DomainEvent
-import com.petitcl.domain4k.stereotype.WithEvents
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-
-
-class A
-class B
-
-context(A)
-fun doA() = "contextA"
-
-context(B)
-fun doB() = "contextB"
-
-data class TestEvent(val data: String) : DomainEvent
-
-data class TestWithEvents(val data: String, override val events: List<DomainEvent>) : WithEvents<TestWithEvents> {
-    override fun addEvent(event: DomainEvent) = this.copy(events = this.events + event)
-
-    override fun clearEvents() = this.copy(events = listOf())
-
-}
-
-
-class TestEventsContext : EventsContext {
-    private val events = mutableListOf<DomainEvent>()
-    fun events() = events.toList()
-    override fun publishEvent(event: DomainEvent) {
-        events.add(event)
-        events.add(TestEvent("TestEventContext.publishEvent"))
-    }
-    override fun publishEvents(event: List<DomainEvent>) {
-        events.addAll(event)
-        events.add(TestEvent("TestEventContext.publishEvents"))
-    }
-}
 
 
 class EventsTest {
