@@ -1,6 +1,6 @@
 package com.petitcl.test.testdomain.domain
 
-import com.petitcl.domain4k.stereotype.DomainEntity
+import com.petitcl.domain4k.stereotype.DomainEntityWithEvents
 import com.petitcl.domain4k.stereotype.DomainEvent
 import java.time.Instant
 import java.util.*
@@ -12,17 +12,15 @@ data class LedgerEntry(
     val amount: Double,
     val date: Instant,
     override val events: List<DomainEvent> = listOf()
-) : DomainEntity<UUID, LedgerEntry> {
+) : DomainEntityWithEvents<UUID, LedgerEntry> {
 
-    override fun equals(other: Any?): Boolean = other != null
+    override fun eq(other: Any?): Boolean = other != null
             && (other is LedgerEntry)
             && (this.id == other.id)
 
-    override fun hashCode(): Int = id.hashCode()
-
     override fun addEvent(event: DomainEvent) = this.copy(events = this.events + event)
 
-    override fun withoutEvents() = this.copy(events = listOf())
+    override fun clearEvents() = this.copy(events = listOf())
 
     companion object {
 

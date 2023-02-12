@@ -1,16 +1,20 @@
 package com.petitcl.sample.domain
 
+import arrow.core.continuations.EffectScope
+import com.petitcl.domain4k.stereotype.AppError
 import com.petitcl.domain4k.stereotype.DomainEvent
 
 
-fun Product.addAttribute(
+context(EffectScope<AppError>)
+suspend fun Product.addAttribute(
     attribute: ProductAttribute,
-): Product = this.copy(attributes = validateAttributes(attributes + attribute))
+): Product = this.copy(attributes = validateAttributes(attributes + attribute).bind())
     .addEvent(AttributesAddedToProductEvent(sku, listOf(attribute)))
 
-fun Product.addAttributes(
+context(EffectScope<AppError>)
+suspend fun Product.addAttributes(
     attributes: List<ProductAttribute>,
-): Product = this.copy(attributes = validateAttributes(attributes + attributes))
+): Product = this.copy(attributes = validateAttributes(attributes + attributes).bind())
     .also { validateAttributes(it.attributes) }
     .addEvent(AttributesAddedToProductEvent(sku, attributes))
 

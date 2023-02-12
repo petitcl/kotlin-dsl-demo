@@ -1,17 +1,23 @@
 package com.petitcl.sample.domain
 
+import arrow.core.continuations.EffectScope
+import com.petitcl.domain4k.stereotype.AppError
 import com.petitcl.domain4k.stereotype.DomainEvent
 import javax.money.MonetaryAmount
 
 
-fun Product.Companion.newProduct(
+context(EffectScope<AppError>)
+suspend fun Product.Companion.newProduct(
     sku: ProductSku,
     name: String,
     description: String,
     price: MonetaryAmount,
     attributes: List<ProductAttribute> = emptyList(),
-): Product = Product(sku, name, description, price, attributes, emptyList())
-    .addEvent(ProductCreatedEvent(sku, name, description, price, attributes))
+): Product {
+    validateAttributes(attributes).bind()
+    return Product(sku, name, description, price, attributes, emptyList())
+        .addEvent(ProductCreatedEvent(sku, name, description, price, attributes))
+}
 
 data class ProductCreatedEvent(
     val sku: ProductSku,

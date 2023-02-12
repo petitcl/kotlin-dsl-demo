@@ -1,5 +1,8 @@
 package com.petitcl.domain4k.context
 
+/**
+ * Context for logging from domain
+ */
 interface LoggingContext {
     fun log(message: String, vararg args: Any)
     fun debug(message: String, vararg args: Any)

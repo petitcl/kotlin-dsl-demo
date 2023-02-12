@@ -1,5 +1,7 @@
 package com.petitcl.sample.domain
 
+import arrow.core.continuations.effect
+import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
@@ -11,14 +13,17 @@ private val PRODUCT_PRICE =  100.euros()
 
 internal class CreateProductTest {
     @Test
-    fun `should create product with ProductCreatedEvent`() {
-
-        val product = Product.newProduct(
-            sku = PRODUCT_SKU,
-            name = PRODUCT_NAME,
-            description =PRODUCT_DESCRIPTION,
-            price = PRODUCT_PRICE,
-        )
+    fun `should create product with ProductCreatedEvent`() = runBlocking {
+        val result = effect {
+            Product.newProduct(
+                sku = PRODUCT_SKU,
+                name = PRODUCT_NAME,
+                description =PRODUCT_DESCRIPTION,
+                price = PRODUCT_PRICE,
+            )
+        }.orNull()
+        assertNotNull(result)
+        val product = result!!
 
         assertEquals(PRODUCT_SKU_STRING, product.sku.value)
         assertEquals(PRODUCT_NAME, product.name)
