@@ -23,7 +23,7 @@ fun Cart.Companion.newCart(): Cart
     = Cart(
         id = UUID.randomUUID(),
         creationTime = now(),
-      ).also { raiseEvent(CartCreated(it.id, it.creationTime)) }
+      ).also { publishEvent(CartCreated(it.id, it.creationTime)) }
 
 data class CartCreated(
     val cartId: UUID,

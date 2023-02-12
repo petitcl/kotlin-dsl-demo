@@ -10,33 +10,20 @@ import kotlin.contracts.contract
  * Context for raising events from domain
  */
 interface EventsContext {
-    fun raiseEvent(event: DomainEvent)
-    fun raiseEvents(event: List<DomainEvent>) = event.forEach { raiseEvent(it) }
-    fun raiseEventsOf(withEvents: WithEvents<*>) = raiseEvents(withEvents.events)
+    fun publishEvent(event: DomainEvent)
+    fun publishEvents(event: List<DomainEvent>) = event.forEach { publishEvent(it) }
+    fun publishEventsOf(withEvents: WithEvents<*>) = publishEvents(withEvents.events)
 
     companion object
 }
 
-/**
- * Base interface for any object that can publish domain events.
- */
-interface EventsPublisher {
-    fun publishEvent(event: DomainEvent)
-    fun publishEvents(event: List<DomainEvent>) = event.forEach { publishEvent(it) }
-}
-
-fun EventsContext.Companion.of(publisher: EventsPublisher): EventsContext = DefaultEventContext(publisher)
-class DefaultEventContext(private val publisher: EventsPublisher) : EventsContext {
-    override fun raiseEvent(event: DomainEvent) = publisher.publishEvent(event)
-    override fun raiseEvents(event: List<DomainEvent>) = publisher.publishEvents(event)
-}
-
-class NoOpEventsPublisher : EventsPublisher {
+class NoOpEventsContext : EventsContext {
     override fun publishEvent(event: DomainEvent) = Unit
-    override fun publishEvents(event: List<DomainEvent>) = Unit
 }
 
-class CollectingEventsPublisher : EventsPublisher {
+fun EventsContext.Companion.noOp(): EventsContext = NoOpEventsContext()
+
+class CollectingEventsContext : EventsContext {
     private val events = mutableListOf<DomainEvent>()
     fun events() = events.toList()
     override fun publishEvent(event: DomainEvent) {
@@ -54,39 +41,50 @@ class CollectingEventsPublisher : EventsPublisher {
  * Events collected are flushed to the given publisher after the block is done executing.
  */
 @OptIn(ExperimentalContracts::class)
-inline fun runAndCollectEvents(sink: EventsPublisher, block: context(EventsContext) () -> Unit) {
+inline fun <R> runAndCollectEvents(sink: EventsContext, block: context(EventsContext) () -> R): R {
     contract {
         callsInPlace(block, InvocationKind.EXACTLY_ONCE)
     }
-    val publisher = CollectingEventsPublisher()
-    block(EventsContext.of(publisher))
-    val events = publisher.events()
+
+    val collector = CollectingEventsContext()
+    val r = block(collector)
+    val events = collector.events()
+
     sink.publishEvents(events)
+    return r
 }
 
 @OptIn(ExperimentalContracts::class)
 @Suppress("SUBTYPING_BETWEEN_CONTEXT_RECEIVERS")
-inline fun <A> runAndCollectEvents(sink: EventsPublisher, a: A, block: context(EventsContext, A) () -> Unit) {
+inline fun <A, R> runAndCollectEvents(sink: EventsContext, a: A, block: context(EventsContext, A) () -> R): R {
     contract {
         callsInPlace(block, InvocationKind.EXACTLY_ONCE)
     }
-    val publisher = CollectingEventsPublisher()
-    block(EventsContext.of(publisher), a)
-    val events = publisher.events()
+
+    val collector = CollectingEventsContext()
+    val r = block(collector, a)
+    val events = collector.events()
+
     sink.publishEvents(events)
+    return r
 }
 
 @OptIn(ExperimentalContracts::class)
 @Suppress("SUBTYPING_BETWEEN_CONTEXT_RECEIVERS")
-inline fun <A, B> runAndCollectEvents(sink: EventsPublisher, a: A, b: B, block: context(EventsContext, A, B) () -> Unit) {
+inline fun <A, B, R> runAndCollectEvents(sink: EventsContext, a: A, b: B, block: context(EventsContext, A, B) () -> R): R {
     contract {
         callsInPlace(block, InvocationKind.EXACTLY_ONCE)
     }
-    val publisher = CollectingEventsPublisher()
-    block(EventsContext.of(publisher), a, b)
-    val events = publisher.events()
+
+    val collector = CollectingEventsContext()
+    val r = block(collector, a, b)
+    val events = collector.events()
+
     sink.publishEvents(events)
+    return r
 }
+
+// TODO: delete runAndReturnEvents?
 
 /**
  * Run a block of code and collect all events raised during the execution.
@@ -97,9 +95,11 @@ inline fun runAndReturnEvents(block: context(EventsContext) () -> Unit): List<Do
     contract {
         callsInPlace(block, InvocationKind.EXACTLY_ONCE)
     }
-    val publisher = CollectingEventsPublisher()
-    block(EventsContext.of(publisher))
-    return publisher.events()
+
+    val collector = CollectingEventsContext()
+    block(collector)
+
+    return collector.events()
 }
 
 @OptIn(ExperimentalContracts::class)
@@ -108,9 +108,11 @@ inline fun <A> runAndReturnEvents(a: A, block: context(EventsContext, A) () -> U
     contract {
         callsInPlace(block, InvocationKind.EXACTLY_ONCE)
     }
-    val publisher = CollectingEventsPublisher()
-    block(EventsContext.of(publisher), a)
-    return publisher.events()
+
+    val collector = CollectingEventsContext()
+    block(collector, a)
+
+    return collector.events()
 }
 
 @OptIn(ExperimentalContracts::class)
@@ -119,10 +121,9 @@ inline fun <A, B> runAndReturnEvents(a: A, b : B, block: context(EventsContext, 
     contract {
         callsInPlace(block, InvocationKind.EXACTLY_ONCE)
     }
-    val publisher = CollectingEventsPublisher()
-    block(EventsContext.of(publisher), a, b)
-    return publisher.events()
+
+    val collector = CollectingEventsContext()
+    block(collector, a, b)
+
+    return collector.events()
 }
-
-
-fun EventsContext.Companion.noOp(): EventsContext = DefaultEventContext(NoOpEventsPublisher())

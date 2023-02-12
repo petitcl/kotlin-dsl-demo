@@ -1,21 +1,20 @@
 package com.petitcl.sample.domain
 
-import arrow.core.continuations.EffectScope
-import com.petitcl.domain4k.stereotype.AppError
+import arrow.core.continuations.either
 import com.petitcl.domain4k.stereotype.DomainEvent
+import com.petitcl.domain4k.stereotype.ErrorOr
 import javax.money.MonetaryAmount
 
 
-context(EffectScope<AppError>)
 suspend fun Product.Companion.newProduct(
     sku: ProductSku,
     name: String,
     description: String,
     price: MonetaryAmount,
     attributes: List<ProductAttribute> = emptyList(),
-): Product {
+): ErrorOr<Product> = either {
     validateAttributes(attributes).bind()
-    return Product(sku, name, description, price, attributes, emptyList())
+    Product(sku, name, description, price, attributes, emptyList())
         .addEvent(ProductCreatedEvent(sku, name, description, price, attributes))
 }
 
