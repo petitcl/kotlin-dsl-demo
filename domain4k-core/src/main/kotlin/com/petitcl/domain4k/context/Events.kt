@@ -47,6 +47,8 @@ class CollectingEventsPublisher : EventsPublisher {
     }
 }
 
+// TODO: generalise these methods by introducing initializing and finalizing contexts?
+
 /**
  * Run a block of code and collect all events raised during the execution.
  * Events collected are flushed to the given publisher after the block is done executing.

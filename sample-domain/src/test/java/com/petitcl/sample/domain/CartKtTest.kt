@@ -3,8 +3,6 @@ package com.petitcl.sample.domain
 import com.petitcl.domain4k.context.*
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
-import java.time.Instant
-import java.util.*
 
 val time = TimeContext.default()
 val events = EventsContext.noOp()
@@ -22,7 +20,7 @@ internal class CartKtTest {
 
     @Test
     fun `test create new cart with multiple context`() {
-        withContexts(events, time) {
+        within(events, time) {
             val cart = Cart.newCart()
             assertNotNull(cart.id)
         }
