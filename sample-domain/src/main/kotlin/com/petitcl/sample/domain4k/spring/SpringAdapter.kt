@@ -6,15 +6,18 @@ import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
-class SpringEventDispatcher(private val publisher: ApplicationEventPublisher) : EventsPublisher {
-    override fun publishEvent(event: DomainEvent) = publisher.publishEvent(event)
+class SpringEventsContext(private val publisher: ApplicationEventPublisher) : EventsContext {
+    override fun publishEvent(event: DomainEvent)
+        = publisher
+            .also { println("SpringEventsContext.publishEvent: $event") }
+            .publishEvent(event)
 }
 
 @Configuration
 class Domain4kSpringAdapter {
     @Bean
     fun eventsContext(publisher: ApplicationEventPublisher): EventsContext
-        = EventsContext.of(SpringEventDispatcher(publisher))
+        = SpringEventsContext(publisher)
 
     @Bean
     fun timeContext(): TimeContext = TimeContext.default()

@@ -18,6 +18,7 @@ internal class SpringProductsRepository(private val repository: SpringJpaReposit
         = product.toEntity()
         .let { repository.save(it) }
         .toDomain()
+        .also { println("SpringProductsRepository.save($product)") }
 
     override fun findBySku(sku: ProductSku): Product? {
         TODO("Not yet implemented")
