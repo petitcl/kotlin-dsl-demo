@@ -38,14 +38,14 @@ class CollectingEventsContext : EventsContext {
  * Return a new [EventsContext] that will forward all events to this [EventsContext] after the block is done executing.
  * Use in conjunction with [within] to collect events raised in a block of code.
  */
-fun EventsContext.pipe(): EventsContext = ForwardingEventsContext(this)
+fun EventsContext.lazy(): EventsContext = LazyEventsContext(this)
 
-class ForwardingEventsContext(
+class LazyEventsContext(
     private val sink: EventsContext
-) : EventsContext, ContextWithLifecycle<ForwardingEventsContext> {
+) : EventsContext, ContextWithLifecycle<LazyEventsContext> {
     private val collector = CollectingEventsContext()
     override fun publishEvent(event: DomainEvent) = collector.publishEvent(event)
-    override fun initialize(): ForwardingEventsContext = this
+    override fun initialize(): LazyEventsContext = this
     override fun finalize() = sink.publishEvents(collector.events())
 }
 
