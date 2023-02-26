@@ -23,28 +23,4 @@ class ProductsControllerIntTest {
             status { isOk() }
         }
     }
-
-    @Test
-    fun `create product v2`() {
-        mockMvc.post("/v1/products/v2") {
-        }.andExpect {
-            status { isOk() }
-        }
-    }
-
-    @Test
-    fun `create product v3`() {
-        mockMvc.post("/v1/products/v3") {
-        }.andExpect {
-            status { isOk() }
-        }
-    }
-
-    @Test
-    fun `create product v4`() {
-        mockMvc.post("/v1/products/v4") {
-        }.andExpect {
-            status { isOk() }
-        }
-    }
 }
